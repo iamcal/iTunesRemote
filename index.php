@@ -98,6 +98,15 @@ function updatePlayState(state){
 	ge('playbtnimg').src = (state == 'playing') ? 'images/btn_pause.gif' : 'images/btn_play.gif';
 }
 
+function updateArtwork(){
+	ajaxify('artwork.php', {}, function(o){
+		if (o.ok){
+			var d = new Date();
+			ge('artwork').src = 'artwork.png?cb='+d.getTime();
+		}
+	});
+}
+
 </script>
 <style>
 
@@ -199,6 +208,12 @@ a img {
 <a href="control.php?q=louder" onclick="volumeUp(); return false;">louder</a><br />
 <a href="control.php?q=quieter" onclick="volumeDown(); return false;">quieter</a><br />
 <a href="control.php?q=mute">mute</a><br />
+
+<hr />
+
+<a href="#" onclick="updateArtwork(); return false;"><img src="artwork.png" id="artwork" /></a>
+
+<hr />
 
 <form action="./" method="post">
 <input type="text" name="cmd" value="<?=HtmlSpecialChars($_POST[cmd])?>" /> <input type="submit" value="Run Command" />
