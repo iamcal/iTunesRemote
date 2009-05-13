@@ -5,7 +5,7 @@
 	# Inspired by http://www.whatsmyip.org/itunesremote/
 	#
 
-	echo "<META HTTP-EQUIV=refresh content=1;URL=./>";
+	echo "<META HTTP-EQUIV=refresh content=10;URL=./>";
 
 	$q = $_GET['q'];
 
@@ -57,29 +57,27 @@
 	}
 
 
-    function mutev()
-    {
-    echo "start mute function<br>";
+	function mutev(){
 
-    $data = file_get_contents("/www/volume.txt");
+		echo "start mute function<br>";
 
-    $logfile = fopen("/www/volume.txt",'w');
+		$data = file_get_contents("/www/volume.txt");
 
-    $oldvolume = exec("osascript -e 'tell app \"iTunes\" to sound volume'");
+		$logfile = fopen("/www/volume.txt",'w');
 
-    echo "volume data:$data:<br>";
-    if ($data == "x")
-    {
-    fwrite($logfile,$oldvolume);
-    exec("osascript -e 'tell app \"iTunes\" to set sound volume to 0'");
-    }
-    else
-    {
-    fwrite($logfile,"x");
-    exec("osascript -e 'tell app \"iTunes\" to set sound volume to $data'");
-    }
-    fclose($logfile);
-    }
+		$oldvolume = trim(run_command('tell app "iTunes" to sound volume'));
+
+		echo "volume data:$data:<br>";
+
+		if ($data == "x"){
+			fwrite($logfile,$oldvolume);
+			run_command('tell app "iTunes" to set sound volume to 0');
+		}else{
+			fwrite($logfile,"x");
+			run_command('tell app "iTunes" to set sound volume to'. $data);
+		}
+		fclose($logfile);
+	}
 
 
 	function run_command($cmd){

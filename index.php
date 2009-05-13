@@ -134,18 +134,62 @@ a img {
 	border: 0;
 }
 
+#volumebg {
+	position: absolute;
+	left: 155px;
+	top: 40px;
+	width: 107px;
+	height: 11px;
+	background-image: url(images/volume_bg.gif);
+}
+
+#title {
+	position: absolute;
+	top: 2px;
+	left: 10px;
+	right: 10px;
+	text-align: center;
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#textbox {
+	position: absolute;
+	background-color: pink;
+	left: 315px;
+	top: 22px;
+	bottom: 7px;
+	right: 100px;
+	background-image: url(images/status_bg.gif);
+	background-repeat: repeat-x;
+	background-color: #DEE1CA;
+
+	/* outer */
+	border-left: 1px solid #A6A897;
+	border-top: 1px solid #696B5E;
+	border-right: 1px solid #A6A997;
+	border-bottom: 1px solid #CFCFCF;
+
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
 </style>
 </head>
 <body>
 
 <div id="topbar">
+	<div id="title">iTunes Remote</div>
+
 	<div id="prev"><a href="#" onclick="doPrev(); return false;"><img src="images/btn_prev.gif" width="31" height="32" /></a></div>
 	<div id="play"><a href="#" onclick="doPlay(); return false;"><img src="images/btn_play.gif" width="37" height="38" id="playbtnimg" /></a></div>
 	<div id="next"><a href="#" onclick="doNext(); return false;"><img src="images/btn_next.gif" width="31" height="32" /></a></div>
+	<div id="volumebg"></div>
 
-	<div style="position: absolute; left: 200px; top: 20px;">
-		<div>Current: <span id="current">Loading...</span></div>
-		<div>Volume: <span id="volume">Loading...</span></div>
+	<div id="textbox">
+		<div style="padding: 0 10px;">Current: <span id="current">Loading...</span></div>
+		<div style="padding: 0 10px;">Volume: <span id="volume">Loading...</span></div>
 	</div>
 
 </div>
