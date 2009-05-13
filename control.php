@@ -1,4 +1,10 @@
 <?
+	#
+	# $Id$
+	#
+	# Inspired by http://www.whatsmyip.org/itunesremote/
+	#
+
 	echo "<META HTTP-EQUIV=refresh content=1;URL=./>";
 
 	$q = $_GET['q'];
