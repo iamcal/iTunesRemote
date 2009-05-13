@@ -62,6 +62,22 @@ function getState(){
 	});
 }
 
+function volumeUp(){
+	ajaxify('ajax.php', {'q': 'volume_up'}, function(o){
+		if (o.ok){
+			ge('volume').innerHTML = escapeXML(o.volume);
+		}
+	});
+}
+
+function volumeDown(){
+	ajaxify('ajax.php', {'q': 'volume_down'}, function(o){
+		if (o.ok){
+			ge('volume').innerHTML = escapeXML(o.volume);
+		}
+	});
+}
+
 </script>
 </head>
 <body>
@@ -77,8 +93,8 @@ function getState(){
 <a href="control.php?q=playpause">playpause</a><br />
 <a href="control.php?q=next">next</a><br />
 <a href="control.php?q=prev">prev</a><br />
-<a href="control.php?q=louder">louder</a><br />
-<a href="control.php?q=quieter">quieter</a><br />
+<a href="control.php?q=louder" onclick="volumeUp(); return false;">louder</a><br />
+<a href="control.php?q=quieter" onclick="volumeDown(); return false;">quieter</a><br />
 <a href="control.php?q=mute">mute</a><br />
 
 <form action="./" method="post">
