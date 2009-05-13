@@ -55,7 +55,7 @@ function getState(){
 
 		console.log(o);
 		if (o.ok){
-			ge('state').innerHTML = escapeXML(o.state);
+			updatePlayState(o.state);
 			ge('current').innerHTML = escapeXML(o.current);
 			ge('volume').innerHTML = escapeXML(o.volume);
 		}
@@ -78,21 +78,80 @@ function volumeDown(){
 	});
 }
 
+function doPrev(){
+	ajaxify('ajax.php', {'q': 'prev'}, function(o){ getState(); });
+}
+
+function doNext(){
+	ajaxify('ajax.php', {'q': 'next'}, function(o){ getState(); });
+}
+
+function doPlay(){
+	ajaxify('ajax.php', {'q': 'play_toggle'}, function(o){
+		if (o.ok){
+			updatePlayState(o.state);
+		}
+	});
+}
+
+function updatePlayState(state){
+	ge('playbtnimg').src = (state == 'playing') ? 'images/btn_pause.gif' : 'images/btn_play.gif';
+}
+
 </script>
+<style>
+
+#topbar {
+	position: relative;
+	background-image: url(images/top_bg.gif);
+	background-repeat: repeat-x;
+	background-color: #969696;
+	border: 1px solid #606060;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	height: 75px;
+}
+
+#play {
+	position: absolute;
+	left: 60px;
+	top: 27px;
+}
+
+#prev {
+	position: absolute;
+	left: 23px;
+	top: 30px;
+}
+
+#next {
+	position: absolute;
+	left: 103px;
+	top: 30px;
+}
+
+a img {
+	border: 0;
+}
+
+</style>
 </head>
 <body>
 
-<div>State: <span id="state">Loading...</span></div>
-<div>Current: <span id="current">Loading...</span></div>
-<div>Volume: <span id="volume">Loading...</span></div>
+<div id="topbar">
+	<div id="prev"><a href="#" onclick="doPrev(); return false;"><img src="images/btn_prev.gif" width="31" height="32" /></a></div>
+	<div id="play"><a href="#" onclick="doPlay(); return false;"><img src="images/btn_play.gif" width="37" height="38" id="playbtnimg" /></a></div>
+	<div id="next"><a href="#" onclick="doNext(); return false;"><img src="images/btn_next.gif" width="31" height="32" /></a></div>
+
+	<div style="position: absolute; left: 200px; top: 20px;">
+		<div>Current: <span id="current">Loading...</span></div>
+		<div>Volume: <span id="volume">Loading...</span></div>
+	</div>
+
+</div>
 
 <p><a href="#" onclick="getState(); return false">get state</a></p>
 
-<a href="control.php?q=play">play</a><br />
-<a href="control.php?q=pause">pause</a><br />
-<a href="control.php?q=playpause">playpause</a><br />
-<a href="control.php?q=next">next</a><br />
-<a href="control.php?q=prev">prev</a><br />
 <a href="control.php?q=louder" onclick="volumeUp(); return false;">louder</a><br />
 <a href="control.php?q=quieter" onclick="volumeDown(); return false;">quieter</a><br />
 <a href="control.php?q=mute">mute</a><br />

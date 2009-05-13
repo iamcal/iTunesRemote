@@ -40,6 +40,29 @@
 		));
 	}
 
+	if ($_REQUEST[q] == 'prev'){
+		run_command('tell app "iTunes" to previous track');
+		exit_with_json(array('ok' => 1));
+	}
+
+	if ($_REQUEST[q] == 'next'){
+		run_command('tell app "iTunes" to next track');
+		exit_with_json(array('ok' => 1));
+	}
+
+	if ($_REQUEST[q] == 'play_toggle'){
+
+		run_command('tell app "iTunes" to playpause');
+		$state = trim(run_command('tell app "iTunes" to player state'));
+
+		exit_with_json(array(
+			'ok' => 1,
+			'state'		=> $state,
+		));
+	}
+
+
+
 	# other commands:
 	# play track 13 of user playlist "Sparkle and Fade"
 	# http://dougscripts.com/itunes/itinfo/info02.php
