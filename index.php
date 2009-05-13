@@ -115,9 +115,14 @@ function updateArtwork(){
 	background-image: url(images/top_bg.gif);
 	background-repeat: repeat-x;
 	background-color: #969696;
-	border: 1px solid #606060;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
+	border-left: 1px solid #606060;
+	border-right: 1px solid #606060;
+	border-top: 1px solid #606060;
+	border-bottom: 1px solid #404040;
+	-moz-border-radius-topleft: 3px;
+	-moz-border-radius-topright: 3px;
+	-webkit-border-radius-topleft: 3px;
+	-webkit-border-radius-topright: 3px;
 	height: 75px;
 }
 
@@ -184,6 +189,49 @@ a img {
 	-webkit-border-radius: 3px;
 }
 
+#midblock {
+	position: relative;
+	border-left: 1px solid #606060;
+	border-right: 1px solid #606060;
+	height: 600px;
+}
+
+#btmbar {
+	position: relative;
+	background-image: url(images/btm_bg.gif);
+	background-repeat: repeat-x;
+	background-color: #979797;
+	border-left: 1px solid #606060;
+	border-right: 1px solid #606060;
+	border-top: 1px solid #404040;
+	border-bottom: 1px solid #606060;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	-webkit-border-radius-bottomleft: 3px;
+	-webkit-border-radius-bottomright: 3px;
+	height: 27px;
+}
+
+#sidebar {
+	position: absolute;
+	left: 0px;
+	width: 200px;
+	top: 0px;
+	bottom: 0px;
+	background-color: #D1D7E2;
+	border-right: 1px solid #404040;
+}
+
+#content {
+	position: absolute;
+	left: 201px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	background-color: #fff;
+	overflow: auto;
+}
+
 </style>
 </head>
 <body>
@@ -200,11 +248,15 @@ a img {
 		<div style="padding: 0 10px;">Current: <span id="current">Loading...</span></div>
 		<div style="padding: 0 10px;">Volume: <span id="volume">Loading...</span></div>
 	</div>
-
 </div>
+<div id="midblock">
+	<div id="sidebar">
+		blah
+	</div>
+	<div id="content">
+		<div style="padding: 20px;">
 
-<p><a href="#" onclick="getState(); return false">get state</a></p>
-
+<a href="#" onclick="getState(); return false">update state</a><br />
 <a href="control.php?q=louder" onclick="volumeUp(); return false;">louder</a><br />
 <a href="control.php?q=quieter" onclick="volumeDown(); return false;">quieter</a><br />
 <a href="control.php?q=mute">mute</a><br />
@@ -228,6 +280,14 @@ $ tell application "iTunes" to <?=HtmlSpecialChars($_POST[cmd])?>:
 
 
 <? } ?>
+
+		</div>
+	</div>
+</div>
+<div id="btmbar">
+</div>
+
+
 
 <script>
 getState();

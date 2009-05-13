@@ -68,6 +68,24 @@
 	# http://dougscripts.com/itunes/itinfo/info02.php
 
 
+	#
+	# what playlist are we on?
+	# get current playlist => user playlist id 86174
+	# get name of user playlist id 86174 => Music
+	# get playlists =>
+	# library playlist id 56368, user playlist id 86174, user playlist id 110413, user playlist id 110416,
+	# user playlist id 85764, user playlist id 154088, user playlist id 85708, user playlist id 153699,
+	# user playlist id 80987, user playlist id 85074, user playlist id 85705, user playlist id 85106,
+	# user playlist id 85078, user playlist id 140218, user playlist id 138865, user playlist id 153985,
+	# user playlist id 153627, user playlist id 121568, user playlist id 110722, user playlist id 112064,
+	# user playlist id 110425, user playlist id 127634, user playlist id 138892, user playlist id 153702,
+	# user playlist id 153991, user playlist id 154004, user playlist id 206327, user playlist id 127612,
+	# user playlist id 153612, user playlist id 153694
+	#
+	# get special kind of user playlist id 206327 => none / Music / TV Shows
+
+
+
 	exit_with_json(array(
 		'ok'	=> 0,
 		'error'	=> 'Unknown method: '.$_REQUEST[q],
