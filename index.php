@@ -6,6 +6,12 @@
 <title>iTunes Remote</title>
 <script>
 
+var g_interval = null;
+var g_state_at = 0;
+var g_song_pos = 0;
+var g_song_dur = 0;
+var g_song_name = '';
+
 function ge(x){
 	return document.getElementById(x);
 }
@@ -53,27 +59,15 @@ function ajaxify(url, args, handler){
 function getState(){
 	ajaxify('ajax.php', {'q': 'get_state'}, function(o){
 
-		console.log(o);
 		if (o.ok){
-			updatePlayState(o.state);
+			updatePlayState(o);
 			ge('current').innerHTML = escapeXML(o.current);
-			ge('volume').innerHTML = escapeXML(o.volume);
-		}
-	});
-}
 
-function volumeUp(){
-	ajaxify('ajax.php', {'q': 'volume_up'}, function(o){
-		if (o.ok){
-			ge('volume').innerHTML = escapeXML(o.volume);
-		}
-	});
-}
+			if (o.current != g_song_name){
 
-function volumeDown(){
-	ajaxify('ajax.php', {'q': 'volume_down'}, function(o){
-		if (o.ok){
-			ge('volume').innerHTML = escapeXML(o.volume);
+				g_song_name = o.current;
+				updateArtwork();
+			}
 		}
 	});
 }
@@ -89,13 +83,35 @@ function doNext(){
 function doPlay(){
 	ajaxify('ajax.php', {'q': 'play_toggle'}, function(o){
 		if (o.ok){
-			updatePlayState(o.state);
+			updatePlayState(o);
 		}
 	});
 }
 
-function updatePlayState(state){
-	ge('playbtnimg').src = (state == 'playing') ? 'images/btn_pause.gif' : 'images/btn_play.gif';
+function updatePlayState(o){
+
+	ge('playbtnimg').src = (o.state == 'playing') ? 'images/btn_pause.gif' : 'images/btn_play.gif';
+
+	updatePlaybackHead(o.pos, o.dur);
+
+	if (o.state == 'playing'){
+		var remain = o.dur - o.pos;
+
+		g_state_at = new Date().getTime();
+		g_song_pos = o.pos;
+		g_song_dur = o.dur;
+
+		if (!g_interval){
+			g_interval = window.setInterval('playbackInterval()', 1000);
+		}
+	}else{
+		if (g_interval){
+			window.clearInterval(g_interval);
+			g_interval = null;
+		}
+	}
+
+	ge('volumeknob').style.left = ((14 - 6) + (74 * o.volume / 100)) + 'px';
 }
 
 function updateArtwork(){
@@ -103,6 +119,77 @@ function updateArtwork(){
 		if (o.ok){
 			var d = new Date();
 			ge('artwork').src = 'artwork.png?cb='+d.getTime();
+		}
+	});
+}
+
+function playbackInterval(){
+
+	var now = new Date().getTime();
+
+	var elapsed = Math.round((now - g_state_at) / 1000);
+
+	var pos = g_song_pos + elapsed;
+
+	if (pos > g_song_dur){
+
+		getState();
+		window.clearInterval(g_interval);
+		g_interval = null;
+	}else{
+		updatePlaybackHead(pos, g_song_dur);
+	}
+}
+
+function updatePlaybackHead(pos, dur){
+
+	ge('position-done').innerHTML = format_ms(pos);
+	ge('position-todo').innerHTML = '-'+format_ms(dur - pos);
+
+	ge('position-inner').style.width = (100 * pos / dur) + '%';
+}
+
+function format_ms(s){
+
+	var m = Math.floor(s / 60);
+	s -= m * 60;
+
+	s = ''+s;
+	if (s.length == 1) s = '0'+s;
+
+	return m+':'+s;
+}
+
+function posClicked(e){
+	if (!e) var e = window.event;
+
+	var frac = e.layerX / 300;
+
+	var pos = Math.round(frac * g_song_dur);
+
+	ajaxify('ajax.php', {'q': 'seek' ,'pos': pos}, function(o){
+		if (o.ok){
+			updatePlayState(o);
+		}
+	});
+}
+
+function volClicked(e){
+	if (!e) var e = window.event;
+
+	var frac = 0;
+
+	if (e.layerX > 14){
+
+		var frac = (e.layerX - 14) / 74;
+		if (frac > 1) frac = 1;
+	}
+
+	var vol = Math.round(100 * frac);
+
+	ajaxify('ajax.php', {'q': 'set_volume' ,'v': vol}, function(o){
+		if (o.ok){
+			updatePlayState(o);
 		}
 	});
 }
@@ -157,6 +244,15 @@ a img {
 	background-image: url(images/volume_bg.gif);
 }
 
+#volumeknob {
+	position: absolute;
+	top: 0px;
+	left: 10px;
+	background-image: url(images/volume_knob.gif);
+	width: 12px;
+	height: 12px;
+}
+
 #title {
 	position: absolute;
 	top: 2px;
@@ -187,6 +283,10 @@ a img {
 
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
+
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 10px;
+
 }
 
 #midblock {
@@ -222,6 +322,13 @@ a img {
 	border-right: 1px solid #404040;
 }
 
+#artwork {
+	position: absolute;
+	width: 180px;
+	left: 10px;
+	top: 10px;
+}
+
 #content {
 	position: absolute;
 	left: 201px;
@@ -230,6 +337,49 @@ a img {
 	bottom: 0px;
 	background-color: #fff;
 	overflow: auto;
+}
+
+#current {
+	position: absolute;
+	top: 6px;
+	left: 0px;
+	width: 100%;
+	text-align: center;
+	font-size: 14px;
+}
+
+#position {
+	position: absolute;
+	top: 31px;
+	left: 50%;
+}
+
+#position-done {
+	position: absolute;
+	top: -2px;
+	left: -180px;
+	width: 40px;
+}
+
+#position-todo {
+	position: absolute;
+	top: -2px;
+	left: 155px;
+	width: 40px;
+}
+
+#position-outer {
+	position: absolute;
+	top: 0px;
+	left: -150px;
+	width: 300px;
+	border: 1px solid black;
+}
+
+#position-inner {
+	width: 0%;
+	height: 7px;
+	background-image: url(images/progress.gif);
 }
 
 </style>
@@ -242,28 +392,29 @@ a img {
 	<div id="prev"><a href="#" onclick="doPrev(); return false;"><img src="images/btn_prev.gif" width="31" height="32" /></a></div>
 	<div id="play"><a href="#" onclick="doPlay(); return false;"><img src="images/btn_play.gif" width="37" height="38" id="playbtnimg" /></a></div>
 	<div id="next"><a href="#" onclick="doNext(); return false;"><img src="images/btn_next.gif" width="31" height="32" /></a></div>
-	<div id="volumebg"></div>
+
+	<div id="volumebg" onclick="volClicked(event)">
+		<div id="volumeknob"></div>
+	</div>
 
 	<div id="textbox">
-		<div style="padding: 0 10px;">Current: <span id="current">Loading...</span></div>
-		<div style="padding: 0 10px;">Volume: <span id="volume">Loading...</span></div>
+		<div id="position">
+			<div id="position-done">0:00</div>
+			<div id="position-outer" onclick="posClicked(event)"><div id="position-inner"></div></div>
+			<div id="position-todo">0:00</div>
+		</div>
+		<div id="current">...</div>
 	</div>
 </div>
 <div id="midblock">
 	<div id="sidebar">
-		blah
+
+		<a href="#" onclick="updateArtwork(); return false;"><img src="artwork.png" id="artwork" /></a>
 	</div>
 	<div id="content">
 		<div style="padding: 20px;">
 
-<a href="#" onclick="getState(); return false">update state</a><br />
-<a href="control.php?q=louder" onclick="volumeUp(); return false;">louder</a><br />
-<a href="control.php?q=quieter" onclick="volumeDown(); return false;">quieter</a><br />
-<a href="control.php?q=mute">mute</a><br />
-
-<hr />
-
-<a href="#" onclick="updateArtwork(); return false;"><img src="artwork.png" id="artwork" /></a>
+<a href="#" onclick="getState(); return false">manually update state</a><br />
 
 <hr />
 

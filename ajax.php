@@ -3,22 +3,30 @@
 
 	if ($_REQUEST[q] == 'get_state'){
 
-		$volume = intval(run_command('tell app "iTunes" to sound volume'));
-		$state = trim(run_command('tell app "iTunes" to player state'));
+		$state = get_full_state();
 		$current = trim(run_command('tell app "iTunes" to get (name, artist, album) of current track'));
 
 		exit_with_json(array(
-			'ok' => 1,
-			'volume'	=> $volume,
-			'state'		=> $state,
+			'ok'		=> 1,
 			'current'	=> $current,
+			'volume'	=> $state[volume],
+			'state'		=> $state[state],
+			'pos'		=> $state[pos],
+			'dur'		=> $state[dur],
 		));
 	}
 
 	if ($_REQUEST[q] == 'set_volume'){
 		run_command('tell app "iTunes" to set sound volume to '.intval($_REQUEST[v]));
+
+		$state = get_full_state();
+
 		exit_with_json(array(
-			'ok' => 1,
+			'ok' 		=> 1,
+			'volume'	=> $state[volume],
+			'state'		=> $state[state],
+			'pos'		=> $state[pos],
+			'dur'		=> $state[dur],
 		));
 	}
 
@@ -53,12 +61,42 @@
 	if ($_REQUEST[q] == 'play_toggle'){
 
 		run_command('tell app "iTunes" to playpause');
-		$state = trim(run_command('tell app "iTunes" to player state'));
+		$state = get_full_state();
 
 		exit_with_json(array(
-			'ok' => 1,
-			'state'		=> $state,
+			'ok' 		=> 1,
+			'volume'	=> $state[volume],
+			'state'		=> $state[state],
+			'pos'		=> $state[pos],
+			'dur'		=> $state[dur],
 		));
+	}
+
+	if ($_REQUEST[q] == 'seek'){
+
+		run_command('tell app "iTunes" to set player position to '.intval($_REQUEST[pos]));
+		$state = get_full_state();
+
+		exit_with_json(array(
+			'ok' 		=> 1,
+			'volume'	=> $state[volume],
+			'state'		=> $state[state],
+			'pos'		=> $state[pos],
+			'dur'		=> $state[dur],
+		));
+	}
+
+
+	function get_full_state(){
+
+		$bits = explode(', ', trim(run_command('tell app "iTunes" to get (sound volume, player state, player position, duration of current track)')));
+
+		return array(
+			'volume'	=> intval($bits[0]),
+			'state'		=> $bits[1],
+			'pos'		=> intval($bits[2]),
+			'dur'		=> intval($bits[3]),
+		);
 	}
 
 
