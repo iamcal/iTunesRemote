@@ -3,12 +3,10 @@
 
 	$path = dirname(__FILE__);
 
-	$cmd = "sudo /usr/bin/osascript $path/artwork.as 2>&1";
-
-	$out = HtmlSpecialChars(shell_exec($cmd));
-
+	$out = shell_exec("sudo $GLOBALS[oascript_path] $path/artwork.as $path 2>&1");
 
 	exit_with_json(array(
 		'ok'	=> 1,
+		'out'	=> $out,
 	));
 ?>

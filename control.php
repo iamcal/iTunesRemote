@@ -5,6 +5,8 @@
 	# Inspired by http://www.whatsmyip.org/itunesremote/
 	#
 
+	include('lib.php');
+
 	echo "<META HTTP-EQUIV=refresh content=10;URL=./>";
 
 	$q = $_GET['q'];
@@ -49,43 +51,5 @@
 			run_command('tell app "iTunes" to set sound volume to sound volume - 5');
 			echo "Turning Down the Volume";
 			break;
-
-		case "mute":
-			mutev();
-			echo "Muting the Volume";
-			break;
-	}
-
-
-	function mutev(){
-
-		echo "start mute function<br>";
-
-		$data = file_get_contents("/www/volume.txt");
-
-		$logfile = fopen("/www/volume.txt",'w');
-
-		$oldvolume = trim(run_command('tell app "iTunes" to sound volume'));
-
-		echo "volume data:$data:<br>";
-
-		if ($data == "x"){
-			fwrite($logfile,$oldvolume);
-			run_command('tell app "iTunes" to set sound volume to 0');
-		}else{
-			fwrite($logfile,"x");
-			run_command('tell app "iTunes" to set sound volume to'. $data);
-		}
-		fclose($logfile);
-	}
-
-
-	function run_command($cmd){
-		#$cmd = AddSlashes($cmd);
-		$cmd = "sudo /usr/bin/osascript -e '$cmd' 2>&1";
-		#echo "<pre style=\"border: 1px solid #000\">\$ $cmd</pre>";
-		$out = HtmlSpecialChars(shell_exec($cmd));
-		#echo "<pre style=\"border: 1px solid #000\">$out</pre>";
-		return $out;
 	}
 ?>

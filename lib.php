@@ -1,12 +1,9 @@
 <?
+	$GLOBALS[oascript_path] = '/usr/bin/osascript';
 
 	function run_command($cmd){
-		#$cmd = AddSlashes($cmd);
-		$cmd = "sudo /usr/bin/osascript -e '$cmd' 2>&1";
-		#echo "<pre style=\"border: 1px solid #000\">\$ $cmd</pre>";
-		$out = HtmlSpecialChars(shell_exec($cmd));
-		#echo "<pre style=\"border: 1px solid #000\">$out</pre>";
-		return $out;
+		$cmd = "sudo $GLOBALS[oascript_path] -e '$cmd' 2>&1";
+		return shell_exec($cmd);
 	}
 
 	function exit_with_json($o){
