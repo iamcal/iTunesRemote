@@ -11,6 +11,7 @@ var g_state_at = 0;
 var g_song_pos = 0;
 var g_song_dur = 0;
 var g_song_name = '';
+var g_current_id = 0;
 
 function ge(x){
 	return document.getElementById(x);
@@ -66,6 +67,7 @@ function getState(){
 			if (o.current != g_song_name){
 
 				g_song_name = o.current;
+				getPlaylist();
 				updateArtwork();
 			}
 		}
@@ -194,6 +196,65 @@ function volClicked(e){
 	});
 }
 
+function getPlaylist(){
+
+	ajaxify('ajax.php', {'q': 'playlist'}, function(o){
+		if (o.ok){
+
+			var html = '';
+			var r = 1;
+
+			html += "<tr>\n";
+			html += "<th>&nbsp;</th>\n";
+			html += "<th>ID</th>\n";
+			html += "<th width=\"33%\">Name</th>\n";
+			html += "<th width=\"33%\">Artist</th>\n";
+			html += "<th width=\"33%\">Album</th>\n";
+			html += "</tr>\n";
+
+			var keys = [];
+			for (var id in o.tracks){ keys[keys.length] = id; }
+			keys.sort();
+
+			for (var i=0; i<keys.length; i++){
+				var id = keys[i];
+
+				var class = (r % 2) ? 'row-1' : 'row-2';
+				r++;
+				if (o.tracks[id].current) class += ' current';
+
+				html += "<tr class=\""+class+"\" ondblclick=\"playback('"+id+"'); return false\" onmousedown=\"return false\" onselectstart=\"return false\">\n";
+
+				if (o.tracks[id].current){
+					g_current_id = id;
+					html += "<td><img src=\"images/playing.gif\" width=\"13\" height=\"12\" /></td>\n";
+				}else{
+					html += "<td>&nbsp;</td>\n";
+				}
+
+				html += "<td>"+id+"</td>\n";
+				html += "<td>"+escapeXML(o.tracks[id].name)+"</td>\n";
+				html += "<td>"+escapeXML(o.tracks[id].artist)+"</td>\n";
+				html += "<td>"+escapeXML(o.tracks[id].album)+"</td>\n";
+				html += "</tr>\n";
+			}
+
+
+			ge('playlist').innerHTML = html;
+		}
+	});
+}
+
+function playback(id){
+	if (g_current_id == id) return;
+
+	ajaxify('ajax.php', {'q': 'jump_to', 'index': id}, function(o){
+		if (o.ok){
+			getState();
+		}
+	});
+}
+
 </script>
 <style>
 
@@ -208,8 +269,10 @@ function volClicked(e){
 	border-bottom: 1px solid #404040;
 	-moz-border-radius-topleft: 3px;
 	-moz-border-radius-topright: 3px;
-	-webkit-border-radius-topleft: 3px;
-	-webkit-border-radius-topright: 3px;
+	-webkit-border-top-left-radius: 3px;
+	-webkit-border-top-right-radius: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
 	height: 75px;
 }
 
@@ -307,8 +370,10 @@ a img {
 	border-bottom: 1px solid #606060;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
-	-webkit-border-radius-bottomleft: 3px;
-	-webkit-border-radius-bottomright: 3px;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
 	height: 27px;
 }
 
@@ -382,6 +447,61 @@ a img {
 	background-image: url(images/progress.gif);
 }
 
+
+
+
+
+table#playlist {
+	border-collapse: collapse;
+	font-size: 11px;
+	font-family: Helvetica, Arial, sans-serif;
+	width: 100%;
+}
+
+table#playlist td {
+	cursor: default;
+}
+
+td, th {
+	vertical-align: top;
+	padding: 2px;
+}
+
+th {
+	font-weight: bold;
+	background-image: url(images/th_bg.gif);
+	background-color: #C7C7C7;
+	background-repeat: repeat-x;
+	border-bottom: 1px solid #555555;
+	text-align: left;
+	border-right: 1px solid #B2B2B2;
+}
+
+td {
+	border-right: 1px solid #D9D9D9;
+}
+
+tr.row-1 td {
+	background: #F1F5FA;
+	border-bottom: 1px solid #F1F5FA;
+	color: #000000;
+}
+
+tr.row-2 td {
+	background: #ffffff;
+	border-bottom: 1px solid #ffffff;
+	color: #000000;
+}
+
+tr.current td {
+	color: #fff;
+	background: #3D80DF;
+	border-bottom: 1px solid #7DAAEA;
+	border-right: 1px solid #346DBE;
+}
+
+
+
 </style>
 </head>
 <body>
@@ -410,12 +530,11 @@ a img {
 	<div id="sidebar">
 
 		<a href="#" onclick="updateArtwork(); return false;"><img src="artwork.png" id="artwork" /></a>
-	</div>
-	<div id="content">
-		<div style="padding: 20px;">
+
+<!-- ********************************************** -->
+		<div style="padding: 200px 20px 20px 20px;">
 
 <a href="#" onclick="getState(); return false">manually update state</a><br />
-
 <hr />
 
 <form action="./" method="post">
@@ -429,10 +548,16 @@ $ tell application "iTunes" to <?=HtmlSpecialChars($_POST[cmd])?>:
 <?=nl2br(HtmlSpecialChars(run_command('tell app "iTunes" to '.$_POST[cmd])))?>
 </pre>
 
-
 <? } ?>
-
 		</div>
+<!-- ********************************************** -->
+
+	</div>
+	<div id="content">
+
+		<table id="playlist">
+		</table>
+
 	</div>
 </div>
 <div id="btmbar">

@@ -86,6 +86,20 @@
 		));
 	}
 
+	if ($_REQUEST[q] == 'jump_to'){
+
+		run_command('tell app "iTunes" to play track index '.intval($_REQUEST[index]).' of current playlist');
+		$state = get_full_state();
+
+		exit_with_json(array(
+			'ok' 		=> 1,
+			'volume'	=> $state[volume],
+			'state'		=> $state[state],
+			'pos'		=> $state[pos],
+			'dur'		=> $state[dur],
+		));
+	}
+
 
 	function get_full_state(){
 
@@ -98,6 +112,82 @@
 			'dur'		=> intval($bits[3]),
 		);
 	}
+
+
+	if ($_REQUEST[q] == 'playlist'){
+
+		exit_with_json(get_playlist_context());
+	}
+
+	function get_playlist_context(){
+
+		#
+		# get current index
+		#
+
+		$ret = execute_script_itunes(
+			"set cur_index to index of current track\n".
+			"set cur_length to count of tracks of current playlist\n".
+			"return ((cur_index as text) & \"/\" & (cur_length as text))"
+		);
+
+		if (!$ret[ok]){
+			return $ret;
+		}
+
+		list($cur, $max) = explode('/', $ret[output]);
+
+
+		#
+		# fetch tracks
+		#
+
+		$pre_scope = 10;
+		$post_scope = 30;
+
+		$script = "set out to \"\"\n";
+
+		for ($i=$cur-$pre_scope; $i<=$cur+$post_scope; $i++){
+
+			if ($i < 1) continue;
+			if ($i > $max) continue;
+
+			$script .= "set temp_name to name of track $i of current playlist\n";
+			$script .= "set temp_artist to artist of track $i of current playlist\n";
+			$script .= "set temp_album to album of track $i of current playlist\n";
+			$script .= "set out to out & \"$i:::\" & temp_name & \":::\" & temp_artist & \":::\" & temp_album & \"\\n\"\n";
+		}
+
+		$script .= "return out\n";
+
+		$ret = execute_script_itunes($script);
+
+		if (!$ret[ok]){
+			return $ret;
+		}
+
+		$lines = explode("\n", $ret[output]);
+		$tracks = array();
+
+		foreach ($lines as $line){
+
+			list($index, $name, $artist, $album) = explode(':::', $line);
+
+			$tracks[$index] = array(
+				'name'		=> $name,
+				'artist'	=> $artist,
+				'album'		=> $album,
+			);
+		}
+
+		$tracks[$cur][current] = 1;
+
+		return array(
+			'ok' => 1,
+			'tracks' => $tracks,
+		);
+	}
+
 
 
 

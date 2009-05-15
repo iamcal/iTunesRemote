@@ -97,7 +97,7 @@
 				"\t"	=> "\\t",
 			);
 
-			$s = str_replace(array_keys($map), $map, HtmlSpecialChars($s));
+			$s = str_replace(array_keys($map), $map, $s);
 
 			return '"'.preg_replace_callback('![\x00-\x1f]!', array($this, 'unicodeify'), $s).'"';
 		}
@@ -107,4 +107,54 @@
 			return '\\u'.sprintf('%04x', ord($m[0]));
 		}
 	}
+
+	########################################################################################
+
+	function execute_script_itunes($script){
+
+		return execute_script("tell application \"iTunes\"\n$script\nend tell\n");
+	}
+
+	function execute_script($script){
+
+		$descriptorspec = array(
+			0 => array("pipe", "r"),
+			1 => array("pipe", "w"),
+			2 => array("pipe", "w"),
+		);
+
+		$cwd = dirname(__FILE__);
+		$env = array();
+
+		$cmd = "sudo $GLOBALS[oascript_path]";
+
+		$process = proc_open($cmd, $descriptorspec, $pipes, $cwd, $env);
+		if (is_resource($process)){
+
+			fwrite($pipes[0], $script);
+			fclose($pipes[0]);
+
+			$stdout = stream_get_contents($pipes[1]);
+			fclose($pipes[1]);
+
+			$stderr = stream_get_contents($pipes[2]);
+			fclose($pipes[2]);
+
+			$exit = proc_close($process);
+
+			return array(
+				'ok'		=> $exit == 0 ? 1 : 0,
+				'error'		=> trim($stderr),
+				'output'	=> trim($stdout),
+				'exit_code'	=> $exit,
+			);
+		}
+
+		return array(
+			'ok'	=> 0,
+			'error' => "Can't fork",
+		);
+	}
+
+	########################################################################################
 ?>
