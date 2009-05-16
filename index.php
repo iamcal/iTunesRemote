@@ -289,8 +289,8 @@ function startProgress(){
 
 function animateProgress(){
 	g_preloadFrame++;
-	document.getElementById("progress-img").src = 'images/zoom-spin-'+g_preloadFrame+'.png';
 	if (g_preloadFrame > 12) g_preloadFrame = 1;
+	document.getElementById("progress-img").src = 'images/zoom-spin-'+g_preloadFrame+'.png';
 }
 
 function stopProgress(){
