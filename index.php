@@ -519,8 +519,11 @@ a img {
 	background-image: url(images/progress.gif);
 }
 
-
-
+#buttons {
+	position: absolute;
+	left: 14px;
+	top: 4px;
+}
 
 
 table#playlist {
@@ -623,9 +626,6 @@ tr.current td {
 <!-- ********************************************** -->
 		<div style="padding: 200px 20px 20px 20px;">
 
-<a href="#" onclick="getState(); return false">manually update state</a><br />
-<hr />
-
 <form action="./" method="post">
 <input type="text" name="cmd" value="<?=HtmlSpecialChars($_POST[cmd])?>" /> <input type="submit" value="Run Command" />
 </form>
@@ -653,6 +653,9 @@ $ tell application "iTunes" to <?=HtmlSpecialChars($_POST[cmd])?>:
 	</div>
 </div>
 <div id="btmbar">
+	<div id="buttons">
+		<a href="#" onclick="getState(); return false"><img src="images/sync.gif" width="40" height="20" /></a>
+	</div>
 </div>
 
 
