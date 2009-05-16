@@ -88,6 +88,7 @@
 
 	if ($_REQUEST[q] == 'jump_to'){
 
+		run_command('tell app "iTunes" to reveal track index '.intval($_REQUEST[index]).' of current playlist');
 		run_command('tell app "iTunes" to play track index '.intval($_REQUEST[index]).' of current playlist');
 		$state = get_full_state();
 
@@ -99,6 +100,10 @@
 			'dur'		=> $state[dur],
 		));
 	}
+
+
+
+
 
 
 	function get_full_state(){
@@ -188,6 +193,54 @@
 		);
 	}
 
+	if ($_REQUEST[q] == 'search'){
+
+		$term = AddSlashes($_REQUEST[term]);
+
+		$script  = 'set tracks_list to search current playlist for "'.$term.'"'."\n";
+		$script .= 'set tracks_ref to a reference to tracks_list'."\n";
+		$script .= 'set out to (index of current track as text) & "\\n"'."\n";
+		$script .= 'repeat with t in tracks_ref'."\n";
+
+		$script .= "set temp_name to name of t\n";
+		$script .= "set temp_artist to artist of t\n";
+		$script .= "set temp_album to album of t\n";
+		$script .= "set temp_idx to index of t\n";
+
+		$script .= "set out to out & temp_idx & \":::\" & temp_name & \":::\" & temp_artist & \":::\" & temp_album & \"\\n\"\n";
+
+		$script .= 'end repeat'."\n";
+		$script .= 'return out'."\n";
+
+		$ret = execute_script_itunes($script);
+
+		if (!$ret[ok]) exit_with_json($ret);
+
+		$lines = explode("\n", $ret[output]);
+		$cur = array_shift($lines);
+
+		$tracks = array();
+
+		foreach ($lines as $line){
+
+			list($index, $name, $artist, $album) = explode(':::', $line);
+
+			$tracks[$index] = array(
+				'name'		=> $name,
+				'artist'	=> $artist,
+				'album'		=> $album,
+			);
+		}
+
+		if ($tracks[$cur]){
+			$tracks[$cur][current] = 1;
+		}
+
+		exit_with_json(array(
+			'ok' => 1,
+			'tracks' => $tracks,
+		));
+	}
 
 
 

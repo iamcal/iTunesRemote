@@ -24,12 +24,15 @@ function escapeXML(s){
 
 function ajaxify(url, args, handler){
 
+	startProgress();
+
 	var req = new XMLHttpRequest();
 	req.onreadystatechange = function(){
 
 		var l_f = handler;
 
 		if (req.readyState == 4){
+
 			if (req.status == 200){
 
 				this.onreadystatechange = null;
@@ -42,6 +45,8 @@ function ajaxify(url, args, handler){
 					'debug'	: req.responseText
 				});
 			}
+
+			stopProgress();
 		}
 	}
 
@@ -200,49 +205,66 @@ function getPlaylist(){
 
 	ajaxify('ajax.php', {'q': 'playlist'}, function(o){
 		if (o.ok){
-
-			var html = '';
-			var r = 1;
-
-			html += "<tr>\n";
-			html += "<th>&nbsp;</th>\n";
-			html += "<th>ID</th>\n";
-			html += "<th width=\"33%\">Name</th>\n";
-			html += "<th width=\"33%\">Artist</th>\n";
-			html += "<th width=\"33%\">Album</th>\n";
-			html += "</tr>\n";
-
-			var keys = [];
-			for (var id in o.tracks){ keys[keys.length] = id; }
-			keys.sort();
-
-			for (var i=0; i<keys.length; i++){
-				var id = keys[i];
-
-				var class = (r % 2) ? 'row-1' : 'row-2';
-				r++;
-				if (o.tracks[id].current) class += ' current';
-
-				html += "<tr class=\""+class+"\" ondblclick=\"playback('"+id+"'); return false\" onmousedown=\"return false\" onselectstart=\"return false\">\n";
-
-				if (o.tracks[id].current){
-					g_current_id = id;
-					html += "<td><img src=\"images/playing.gif\" width=\"13\" height=\"12\" /></td>\n";
-				}else{
-					html += "<td>&nbsp;</td>\n";
-				}
-
-				html += "<td>"+id+"</td>\n";
-				html += "<td>"+escapeXML(o.tracks[id].name)+"</td>\n";
-				html += "<td>"+escapeXML(o.tracks[id].artist)+"</td>\n";
-				html += "<td>"+escapeXML(o.tracks[id].album)+"</td>\n";
-				html += "</tr>\n";
-			}
-
-
-			ge('playlist').innerHTML = html;
+			buildPlaylist(o);
 		}
 	});
+}
+
+function doSearch(term){
+
+	if (term){
+
+		ajaxify('ajax.php', {'q': 'search', 'term': term}, function(o){
+			if (o.ok){
+				buildPlaylist(o);
+			}
+		});
+	}else{
+		getPlaylist();
+	}
+}
+
+function buildPlaylist(o){
+
+	var html = '';
+	var r = 1;
+
+	html += "<tr>\n";
+	html += "<th>&nbsp;</th>\n";
+	html += "<th>ID</th>\n";
+	html += "<th width=\"33%\">Name</th>\n";
+	html += "<th width=\"33%\">Artist</th>\n";
+	html += "<th width=\"33%\">Album</th>\n";
+	html += "</tr>\n";
+
+	var keys = [];
+	for (var id in o.tracks){ keys[keys.length] = id; }
+	keys.sort();
+
+	for (var i=0; i<keys.length; i++){
+		var id = keys[i];
+
+		var class = (r % 2) ? 'row-1' : 'row-2';
+		r++;
+		if (o.tracks[id].current) class += ' current';
+
+		html += "<tr class=\""+class+"\" ondblclick=\"playback('"+id+"'); return false\" onmousedown=\"return false\" onselectstart=\"return false\">\n";
+
+		if (o.tracks[id].current){
+			g_current_id = id;
+			html += "<td><img src=\"images/playing.gif\" width=\"13\" height=\"12\" /></td>\n";
+		}else{
+			html += "<td>&nbsp;</td>\n";
+		}
+
+		html += "<td>"+id+"</td>\n";
+		html += "<td>"+escapeXML(o.tracks[id].name)+"</td>\n";
+		html += "<td>"+escapeXML(o.tracks[id].artist)+"</td>\n";
+		html += "<td>"+escapeXML(o.tracks[id].album)+"</td>\n";
+		html += "</tr>\n";
+	}
+
+	ge('playlist').innerHTML = html;
 }
 
 function playback(id){
@@ -253,6 +275,26 @@ function playback(id){
 			getState();
 		}
 	});
+}
+
+var g_preloadFrame = 1;
+var g_progressTimer = null;
+
+function startProgress(){
+	document.getElementById("progress").style.visibility = "visible";	
+	document.getElementById("progress-img").src = 'images/zoom-spin-'+g_preloadFrame+'.png';  
+	g_progressTimer = setInterval("animateProgress()", 100);
+}
+
+function animateProgress(){
+	g_preloadFrame++;
+	document.getElementById("progress-img").src = 'images/zoom-spin-'+g_preloadFrame+'.png';
+	if (g_preloadFrame > 12) g_preloadFrame = 1;
+}
+
+function stopProgress(){
+	document.getElementById("progress").style.visibility = "hidden";    
+	clearInterval(g_progressTimer);
 }
 
 </script>
@@ -333,7 +375,7 @@ a img {
 	left: 315px;
 	top: 22px;
 	bottom: 7px;
-	right: 100px;
+	right: 234px;
 	background-image: url(images/status_bg.gif);
 	background-repeat: repeat-x;
 	background-color: #DEE1CA;
@@ -349,7 +391,26 @@ a img {
 
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 10px;
+}
 
+#search {
+	position: absolute;
+	width: 148px;
+	height: 37px;
+	top: 31px;
+	right: 23px;
+	background-image: url(images/search.gif);
+}
+
+#searchinput {
+	position: absolute;
+	top: 3px;
+	left: 24px;
+	width: 114px;
+	height: 17px;
+	border: 0px;
+	margin: 0px;
+	padding: 0px;
 }
 
 #midblock {
@@ -464,7 +525,7 @@ table#playlist td {
 
 td, th {
 	vertical-align: top;
-	padding: 2px;
+	padding: 2px 4px;
 }
 
 th {
@@ -500,6 +561,12 @@ tr.current td {
 	border-right: 1px solid #346DBE;
 }
 
+#progress {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	visibility: hidden;
+}
 
 
 </style>
@@ -525,6 +592,12 @@ tr.current td {
 		</div>
 		<div id="current">...</div>
 	</div>
+
+	<div id="search">
+		<form action="./" method="get" onsubmit="doSearch(ge('searchinput').value); return false">
+		<input type="text" id="searchinput" />
+		</form>
+	</div>
 </div>
 <div id="midblock">
 	<div id="sidebar">
@@ -549,11 +622,14 @@ $ tell application "iTunes" to <?=HtmlSpecialChars($_POST[cmd])?>:
 </pre>
 
 <? } ?>
+
 		</div>
 <!-- ********************************************** -->
 
 	</div>
 	<div id="content">
+
+		<div id="progress"><img src="images/zoom-spin-1.png" id="progress-img"></div>
 
 		<table id="playlist">
 		</table>
