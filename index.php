@@ -205,6 +205,7 @@ function getPlaylist(){
 
 	ajaxify('ajax.php', {'q': 'playlist'}, function(o){
 		if (o.ok){
+			ge('searchinput').value = '';
 			buildPlaylist(o);
 		}
 	});
