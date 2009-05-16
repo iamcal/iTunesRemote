@@ -302,7 +302,11 @@ function stopProgress(){
 <style>
 
 #topbar {
-	position: relative;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	right: 10px;
+	height: 75px;
 	background-image: url(images/top_bg.gif);
 	background-repeat: repeat-x;
 	background-color: #969696;
@@ -316,7 +320,6 @@ function stopProgress(){
 	-webkit-border-top-right-radius: 3px;
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
-	height: 75px;
 }
 
 #play {
@@ -415,14 +418,21 @@ a img {
 }
 
 #midblock {
-	position: relative;
+	position: absolute;
+	left: 10px;
+	top: 85px;
+	right: 10px;;
+	bottom: 37px;
 	border-left: 1px solid #606060;
 	border-right: 1px solid #606060;
-	height: 600px;
 }
 
 #btmbar {
-	position: relative;
+	position: absolute;
+	left: 10px;
+	right: 10px;
+	height: 27px;
+	bottom: 10px;
 	background-image: url(images/btm_bg.gif);
 	background-repeat: repeat-x;
 	background-color: #979797;
@@ -436,7 +446,6 @@ a img {
 	-webkit-border-bottom-right-radius: 3px;
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 3px;
-	height: 27px;
 }
 
 #sidebar {
@@ -447,6 +456,7 @@ a img {
 	bottom: 0px;
 	background-color: #D1D7E2;
 	border-right: 1px solid #404040;
+	overflow: hidden;
 }
 
 #artwork {
@@ -567,6 +577,11 @@ tr.current td {
 	left: 50%;
 	top: 50%;
 	visibility: hidden;
+}
+#progress img {
+	position: absolute;
+	left: -25px;
+	top: -25px;
 }
 
 
